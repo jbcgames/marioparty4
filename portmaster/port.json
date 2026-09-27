@@ -1,0 +1,38 @@
+{
+  "version": 4,
+  "name": "marioparty4.zip",
+  "items": [
+    "Mario Party 4.sh",
+    "marioparty4"
+  ],
+  "items_opt": [],
+  "attr": {
+    "title": "Mario Party 4",
+    "porter": [
+      "Antigravity",
+      "Community"
+    ],
+    "desc": "Mario Party 4 decompilation native port for RK3326 / Mali-G31 with OpenGL ES 3.0",
+    "desc_md": null,
+    "inst": "Place the extracted game files from Mario Party 4 (USA Rev 1 / GMPE01_01) in the 'marioparty4/files/' directory.",
+    "inst_md": null,
+    "genres": [
+      "party",
+      "board game"
+    ],
+    "image": null,
+    "rtr": false,
+    "exp": false,
+    "runtime": [],
+    "store": [],
+    "availability": "paid",
+    "reqs": [
+      "arm64",
+      "gles3"
+    ],
+    "arch": [
+      "aarch64"
+    ],
+    "min_glibc": "2.31"
+  }
+}

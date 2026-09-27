@@ -19,10 +19,13 @@ class ExtractedInclude:
     alignment: int
 
 
-version = "GMPE01_00"
+if (Path("orig") / "GMPE01_01").exists():
+    version = "GMPE01_01"
+else:
+    version = "GMPE01_00"
 
 assets_path = Path("assets") / version
-build_path = Path("build") / version
+build_path = Path("build") / "GMPE01_00"
 orig_path = Path("orig") / version
 
 include_path = build_path / "include"

@@ -13,10 +13,16 @@ static VIRetraceCallback sVIRetraceCallback = NULL;
 
 void OSReport(const char *msg, ...)
 {
+    static int s_debugChecked = -1;
+    if (s_debugChecked == -1) {
+        s_debugChecked = (getenv("MP4_DEBUG") != NULL) ? 1 : 0;
+    }
+    if (!s_debugChecked) {
+        return;
+    }
     va_list args;
     va_start(args, msg);
     vprintf(msg, args);
-    fflush(stdout);
     va_end(args);
 }
 

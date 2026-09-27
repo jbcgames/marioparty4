@@ -177,13 +177,13 @@ void HuAudFXListnerSetEX(Vec *pos, Vec *heading, float sndDist, float sndSpeed, 
     listener.frontSurDis = frontSurDis + Snd3DFrontSurDisOffset;
     listener.backSurDis = backSurDis + Snd3DBackSurDisOffset;
     // msmSeSetListener(pos, heading, sndDist + Snd3DDistOffset, sndSpeed + Snd3DSpeedOffset, &listener);
-    OSReport("//////////////////////////////////\n");
-    OSReport("sndDist %f\n", sndDist);
-    OSReport("sndSpeed %f\n", sndSpeed);
-    OSReport("startDis %f\n", listener.startDis);
-    OSReport("frontSurDis %f\n", listener.frontSurDis);
-    OSReport("backSurDis %f\n", listener.backSurDis);
-    OSReport("//////////////////////////////////\n");
+    // OSReport("//////////////////////////////////\n");
+    // OSReport("sndDist %f\n", sndDist);
+    // OSReport("sndSpeed %f\n", sndSpeed);
+    // OSReport("startDis %f\n", listener.startDis);
+    // OSReport("frontSurDis %f\n", listener.frontSurDis);
+    // OSReport("backSurDis %f\n", listener.backSurDis);
+    // OSReport("//////////////////////////////////\n");
 }
 
 void HuAudFXListnerUpdate(Vec *pos, Vec *heading)
@@ -462,17 +462,17 @@ void HuAudDllSndGrpSet(u16 ovl) {
         sndGrp++;
     }
     if (grpSet != -1) {
-        OSReport("SOUND ##########################\n");
+        // OSReport("SOUND ##########################\n");
         HuAudSndGrpSetSet(grpSet);
         if (sndGrp->auxANo != auxANoBak || sndGrp->auxBNo != auxBNoBak) {
             // msmSysSetAux(sndGrp->auxANo, sndGrp->auxBNo);
-            OSReport("Change AUX %d,%d\n", sndGrp->auxANo, sndGrp->auxBNo);
+            // OSReport("Change AUX %d,%d\n", sndGrp->auxANo, sndGrp->auxBNo);
             auxANoBak = sndGrp->auxANo;
             auxBNoBak = sndGrp->auxBNo;
             HuPrcVSleep();
         }
         HuAudAUXVolSet(sndGrp->auxAVol, sndGrp->auxBVol);
-        OSReport("##########################\n");
+        // OSReport("##########################\n");
     }
 }
 
@@ -501,7 +501,7 @@ void HuAudSndCommonGrpSet(s16 grpId, s32 groupCheck) {
     osTick = OSGetTick();
     // while ((msmMusGetNumPlay(1) != 0 || msmSeGetNumPlay(1) != 0)
     //     && OSTicksToMilliseconds(OSGetTick() - osTick) < 500);
-    OSReport("CommonGrpSet %d\n", grpId);
+    // OSReport("CommonGrpSet %d\n", grpId);
     // if (groupCheck != 0) {
     //     // err = msmSysDelGroupBase(0);
     //     if (err < 0) {
@@ -567,7 +567,7 @@ void HuAudVoiceInit(s16 ovl) {
         osTick = OSGetTick();
         // while ((msmMusGetNumPlay(1) != 0 || msmSeGetNumPlay(1) != 0)
         //     && OSTicksToMilliseconds(OSGetTick() - osTick) < 500);
-        OSReport("############CharGrpSet\n");
+        // OSReport("############CharGrpSet\n");
         // temp_r25 = msmSysDelGroupBase(0);
         // if (temp_r25 < 0) {
         //     OSReport("Del Group Error %d\n", temp_r25);

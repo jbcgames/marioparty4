@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.13)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_BUILD_RPATH "$ORIGIN:$ORIGIN/libs.aarch64:$ORIGIN/libs")
+set(CMAKE_INSTALL_RPATH "$ORIGIN:$ORIGIN/libs.aarch64:$ORIGIN/libs")
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 
 # obtain revision info from git
 find_package(Git)
@@ -99,7 +102,7 @@ option(SKIP_HU_ALLOC "Skip the game's built in allocator" OFF)
 option(RUNTIME_SANITIZE "Runtime (stack) sanitization" OFF)
 
 set(USE_ASAN OFF CACHE BOOL "Disable ASan" FORCE)
-set(AURORA_ENABLE_DVD ON)
+set(AURORA_ENABLE_DVD OFF CACHE BOOL "Disable nod" FORCE)
 set(RUNTIME_SANITIZE OFF)
 set(SKIP_HU_ALLOC OFF CACHE BOOL "Skip the built in allocator" FORCE)
 
@@ -129,7 +132,7 @@ source_group("Port" FILES ${PORT_FILES})
 add_library(dol SHARED ${GAME_FILES} ${PORT_FILES} extern/libco/libco.c)
 target_compile_definitions(dol PRIVATE TARGET_PC NON_MATCHING OPTIMIZED_TEXTURE_LOADING BYTESWAPPING TARGET_DOL VERSION=${VERSION} MUSY_VERSION_MAJOR=1 MUSY_VERSION_MINOR=5 MUSY_VERSION_PATCH=4)
 target_include_directories(dol PRIVATE include extern/aurora/include extern/aurora/include/dolphin build/GMPE01_00/include extern/libco)
-target_link_libraries(dol PUBLIC aurora::core aurora::card aurora::dvd aurora::gx aurora::mtx aurora::os aurora::si aurora::vi aurora::pad musyx)
+target_link_libraries(dol PUBLIC aurora::core aurora::card aurora::gx aurora::mtx aurora::os aurora::si aurora::vi aurora::pad musyx)
 # TODO it doesn't work on Linux yet
 if (WIN32)
     if(USE_ASAN)

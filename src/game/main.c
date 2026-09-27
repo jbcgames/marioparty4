@@ -23,6 +23,8 @@
 #include <aurora/aurora.h>
 #include <aurora/event.h>
 #include <stdlib.h>
+#include <time.h>
+#include <stdint.h>
 
 const char *__asan_default_options()
 {
@@ -58,8 +60,12 @@ SHARED_SYM s32 SystemInitF;
 
 #ifdef TARGET_PC
 #include <stdio.h>
+#include <string.h>
 void aurora_log_callback(AuroraLogLevel level, const char* module, const char *message, unsigned int len)
 {
+    if (level < LOG_INFO && getenv("MP4_DEBUG") == NULL) {
+        return;
+    }
     const char *levelStr = "??";
     FILE *out = stdout;
     switch (level) {
@@ -96,11 +102,18 @@ void main(void)
 #endif
 {
 #ifdef TARGET_PC
+    const char *limiterEnv = getenv("MP4_FRAME_LIMITER");
+    if (limiterEnv && (strcmp(limiterEnv, "1") == 0 || strcmp(limiterEnv, "true") == 0)) {
+        disableFrameLimiter = FALSE;
+    } else {
+        disableFrameLimiter = TRUE;
+    }
+
     const AuroraInfo auroraInfo = aurora_initialize(argc, argv,
         &(AuroraConfig) {
             .appName = "Party Board",
             .logCallback = &aurora_log_callback,
-            .desiredBackend = BACKEND_AUTO,
+            .desiredBackend = BACKEND_OPENGLES,
             .windowPosX = 100,
             .windowPosY = 100,
             .windowWidth = 640,
@@ -109,6 +122,13 @@ void main(void)
             .mem2Size =  16 * 1024 * 1024,
         });
     aurora_dvd_open(imgui_get_image_path_from_popup());
+    const char *scaleEnv = getenv("MP4_RENDER_SCALE");
+    if (scaleEnv) {
+        float s = (float)atof(scaleEnv);
+        if (s >= 0.25f && s <= 1.0f) {
+            VISetFrameBufferScale(s);
+        }
+    }
 #endif
     u32 met0;
     u32 met1;
@@ -179,6 +199,14 @@ void main(void)
         if (HuSoftResetButtonCheck() != 0 || HuDvdErrWait != 0) {
             continue;
         }
+        uint64_t t_frame_start = 0;
+        uint64_t t_before_3d = 0, t_after_3d = 0;
+        uint64_t t_before_render = 0, t_after_render = 0;
+        uint64_t t_before_end = 0, t_after_end = 0;
+        struct timespec _ts;
+        clock_gettime(CLOCK_MONOTONIC, &_ts);
+        t_frame_start = (uint64_t)_ts.tv_sec * 1000000ULL + (uint64_t)_ts.tv_nsec / 1000ULL;
+
         HuPerfZero();
 
         HuPerfBegin(2);
@@ -201,7 +229,15 @@ void main(void)
         HuPrcCall(1);
         MGSeqMain();
         HuPerfBegin(1);
+
+        clock_gettime(CLOCK_MONOTONIC, &_ts);
+        t_before_3d = (uint64_t)_ts.tv_sec * 1000000ULL + (uint64_t)_ts.tv_nsec / 1000ULL;
+
         Hu3DExec();
+
+        clock_gettime(CLOCK_MONOTONIC, &_ts);
+        t_after_3d = (uint64_t)_ts.tv_sec * 1000000ULL + (uint64_t)_ts.tv_nsec / 1000ULL;
+
         HuDvdErrorWatch();
         WipeExecAlways();
         HuPerfEnd(0);
@@ -210,7 +246,15 @@ void main(void)
         HuPerfEnd(1);
 
         msmMusFdoutEnd();
+
+        clock_gettime(CLOCK_MONOTONIC, &_ts);
+        t_before_render = (uint64_t)_ts.tv_sec * 1000000ULL + (uint64_t)_ts.tv_nsec / 1000ULL;
+
         HuSysDoneRender(retrace);
+
+        clock_gettime(CLOCK_MONOTONIC, &_ts);
+        t_after_render = (uint64_t)_ts.tv_sec * 1000000ULL + (uint64_t)_ts.tv_nsec / 1000ULL;
+
         GXReadGPMetric(&met0, &met1);
         GXReadVCacheMetric(&vcheck, &vmiss, &vstall);
         GXReadPixMetric(&top_pixels_in, &top_pixels_out, &bot_pixels_in, &bot_pixels_out, &clr_pixels_in, &total_copy_clks);
@@ -220,7 +264,26 @@ void main(void)
 
 #ifdef TARGET_PC
         imgui_main(&auroraInfo);
+
+        clock_gettime(CLOCK_MONOTONIC, &_ts);
+        t_before_end = (uint64_t)_ts.tv_sec * 1000000ULL + (uint64_t)_ts.tv_nsec / 1000ULL;
+
         aurora_end_frame();
+
+        clock_gettime(CLOCK_MONOTONIC, &_ts);
+        t_after_end = (uint64_t)_ts.tv_sec * 1000000ULL + (uint64_t)_ts.tv_nsec / 1000ULL;
+
+        static int s_prof_count = 0;
+        if (++s_prof_count >= 30) {
+            s_prof_count = 0;
+            fprintf(stdout, "[PERF-PROFILE] 3D_CPU: %.1fms | DoneRender: %.1fms | GPU_EndFrame: %.1fms | Total: %.1fms\n",
+                    (t_after_3d - t_before_3d) / 1000.0f,
+                    (t_after_render - t_before_render) / 1000.0f,
+                    (t_after_end - t_before_end) / 1000.0f,
+                    (t_after_end - t_frame_start) / 1000.0f);
+            fflush(stdout);
+        }
+
         if (!disableFrameLimiter) {
             frame_limiter();
         }

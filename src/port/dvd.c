@@ -23,9 +23,21 @@ static char s_rootDir[PATH_MAX];
 
 void DVDInit(void)
 {
-    chdir("GMPE01_00/files");
+    if (chdir("GMPE01_01/files") != 0) {
+        if (chdir("GMPE01_00/files") != 0) {
+            if (chdir("files") != 0) {
+                chdir("assets");
+            }
+        }
+    }
     if (getcwd(s_rootDir, sizeof(s_rootDir)) == NULL)
         exit(1);
+}
+
+bool aurora_dvd_open(const char *disc_path)
+{
+    (void)disc_path;
+    return true;
 }
 
 BOOL DVDChangeDir(const char *dir)

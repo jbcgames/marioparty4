@@ -17,9 +17,10 @@
 #include "Windows.h"
 #endif
 
-static bool m_frameRate = true;
+static bool m_frameRate = false;
 static bool m_pipelineInfo = false;
-static bool m_graphicsBackend = true;
+static bool m_graphicsBackend = false;
+static bool m_overlayInitialized = false;
 static int m_debugOverlayCorner = 0; // top-left
 
 using namespace std::string_literals;
@@ -67,7 +68,12 @@ const char* imgui_get_image_path_from_popup()
 {
     const std::filesystem::path exeDir = std::filesystem::path(SDL_GetBasePath());
 
-    const char* filesToCheck[] = { "GMPE01_00.iso", "GMPE01_00.rvz" };
+    if (std::filesystem::exists("files") || std::filesystem::exists("assets") ||
+        std::filesystem::exists(exeDir / "files") || std::filesystem::exists(exeDir / "assets")) {
+        return "";
+    }
+
+    const char* filesToCheck[] = { "GMPE01_00.iso", "GMPE01_00.rvz", "GMPE01_01.iso", "GMPE01_01.rvz" };
 
     static std::string foundPath;
 
@@ -174,8 +180,33 @@ const char* imgui_get_image_path_from_popup()
 
 void imgui_main(const AuroraInfo *info)
 {
-
     ImGuiIO &io = ImGui::GetIO();
+
+    static auto s_lastFpsPrint = std::chrono::steady_clock::now();
+    auto now = std::chrono::steady_clock::now();
+    if (now - s_lastFpsPrint >= std::chrono::seconds(2))
+    {
+        s_lastFpsPrint = now;
+        printf("[MP4-PERF] FPS: %.1f\n", io.Framerate);
+        fflush(stdout);
+    }
+
+    if (!m_overlayInitialized)
+    {
+        m_overlayInitialized = true;
+        const char *showFps = std::getenv("MP4_SHOW_FPS");
+        if (showFps && (std::strcmp(showFps, "1") == 0 || std::strcmp(showFps, "true") == 0))
+        {
+            m_frameRate = true;
+            m_graphicsBackend = true;
+        }
+    }
+
+    if (!m_frameRate && !m_pipelineInfo && !m_graphicsBackend)
+    {
+        return;
+    }
+
     ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDecoration |
                                    ImGuiWindowFlags_AlwaysAutoResize |
                                    ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
