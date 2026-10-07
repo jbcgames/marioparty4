@@ -1,11 +1,17 @@
-This is a port of Mario Party 4.
+This is a port of Mario Party 4 for the rk3326 systems.
 
-The port is currently a work in progress and is not yet playable.
 
-The port is being developed for the Nintendo Switch.
 
-The port is being developed using C++ and SDL.
+# Building
 
-The port is being developed using the libogc homebrew SDK.
+## Dependencies
+- docker (or build in a linux environment)
+- make
+- gcc
+- g++
 
-The port is being developed using thedevkitPro toolchain.
+## Building
+
+```bash
+./build.sh
+```
